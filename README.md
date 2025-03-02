@@ -1,7 +1,7 @@
 # NubCat Discord Bot
 Discord Bot to handle different Maplestory 1 data and tools
 
-![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)
 
 ## Features
 - HEXA Matrix progression tracking and calculations
@@ -47,6 +47,7 @@ Discord Bot to handle different Maplestory 1 data and tools
 ### Utility Commands
 - `/time [options]` - Generate Discord timestamps in various formats
 - `/roll` - Roll a random number between 1-100
+- `/blink` - Start or join a 2-minute blinking session on an image
 - `/ping` - Check the bot's latency
 
 ## Development
@@ -62,6 +63,9 @@ To get started with development:
 - Improved progress visualization with interactive category buttons
 
 ## Changelog
+
+### [1.2.2] - 2024-03-02
+- Added `/blink` command for interactive image blinking sessions
 
 ### [1.2.1] - 2024-03-02
 - Added `/roll` command for generating random numbers between 1-100

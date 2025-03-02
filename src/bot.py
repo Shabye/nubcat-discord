@@ -1,10 +1,12 @@
 import os
 import discord
 import random
+import asyncio
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from data.hexa_progression import HEXA_PROGRESSION
+from datetime import datetime, timedelta
 
 # Load environment variables
 load_dotenv()
@@ -12,6 +14,28 @@ load_dotenv()
 # Bot setup with all intents
 intents = discord.Intents.all()  # Enable all intents
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+# Active blink sessions
+class BlinkSession:
+    def __init__(self, channel_id: int, message_id: int, initiator_id: int, image_height: int):
+        self.channel_id = channel_id
+        self.message_id = message_id
+        self.initiator_id = initiator_id
+        self.image_height = image_height
+        self.participants = {}  # user_id: x_position
+        self.start_time = datetime.now()
+        self.expires_at = self.start_time + timedelta(minutes=2)
+
+    def is_expired(self):
+        return datetime.now() > self.expires_at
+
+    def add_participant(self, user_id: int):
+        if user_id not in self.participants:
+            self.participants[user_id] = random.randint(0, self.image_height)
+            return True
+        return False
+
+active_blink_sessions = {}  # channel_id: BlinkSession
 
 # List of varied meow responses
 MEOW_RESPONSES = [
@@ -858,6 +882,95 @@ async def bluedot(interaction: discord.Interaction, boss: str):
         )
 
     await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(
+    name="blink",
+    description="Start or join a blinking session on an image"
+)
+async def blink(interaction: discord.Interaction):
+    """Start or join a blinking session"""
+    channel_id = interaction.channel_id
+    user_id = interaction.user.id
+
+    # Check if there's an active session in this channel
+    if channel_id in active_blink_sessions:
+        session = active_blink_sessions[channel_id]
+        
+        # Check if session is expired
+        if session.is_expired():
+            del active_blink_sessions[channel_id]
+            await interaction.response.send_message("The previous blink session has expired. Start a new one by sending an image!", ephemeral=True)
+            return
+
+        # Add participant to existing session
+        if session.add_participant(user_id):
+            # Get the original message
+            channel = interaction.channel
+            try:
+                message = await channel.fetch_message(session.message_id)
+                
+                # Create participant list
+                participants_text = "\n".join([
+                    f"<@{uid}> blinked to position {pos}!"
+                    for uid, pos in session.participants.items()
+                ])
+                
+                time_left = session.expires_at - datetime.now()
+                seconds_left = max(0, int(time_left.total_seconds()))
+                
+                embed = discord.Embed(
+                    title="🌟 Blink Session",
+                    description=f"Session ends in {seconds_left} seconds!\n\n{participants_text}",
+                    color=0x00ff00
+                )
+                
+                await message.edit(embed=embed)
+                await interaction.response.send_message(f"You blinked to position {session.participants[user_id]}!", ephemeral=True)
+                
+            except discord.NotFound:
+                del active_blink_sessions[channel_id]
+                await interaction.response.send_message("The blink session message was not found. Please start a new session!", ephemeral=True)
+        else:
+            await interaction.response.send_message("You've already blinked in this session!", ephemeral=True)
+            
+    else:
+        # Check if the interaction has an image attachment
+        if not interaction.message or not interaction.message.attachments:
+            await interaction.response.send_message("Please start a blink session by using this command on an image message!", ephemeral=True)
+            return
+            
+        image = interaction.message.attachments[0]
+        if not image.content_type.startswith('image/'):
+            await interaction.response.send_message("Please use this command on an image message!", ephemeral=True)
+            return
+            
+        # Create new session
+        session = BlinkSession(
+            channel_id=channel_id,
+            message_id=interaction.message.id,
+            initiator_id=user_id,
+            image_height=100  # Default image height, adjust based on actual image
+        )
+        
+        # Add initiator as first participant
+        session.add_participant(user_id)
+        active_blink_sessions[channel_id] = session
+        
+        embed = discord.Embed(
+            title="🌟 Blink Session Started!",
+            description=f"<@{user_id}> started a blink session!\nUse `/blink` to join!\n\n<@{user_id}> blinked to position {session.participants[user_id]}!",
+            color=0x00ff00
+        )
+        embed.set_footer(text="Session will end in 2 minutes")
+        
+        # Schedule session cleanup
+        async def cleanup_session():
+            await asyncio.sleep(120)  # 2 minutes
+            if channel_id in active_blink_sessions:
+                del active_blink_sessions[channel_id]
+        
+        asyncio.create_task(cleanup_session())
+        await interaction.response.send_message(embed=embed)
 
 # Run the bot
 if __name__ == '__main__':
