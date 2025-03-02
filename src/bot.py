@@ -908,6 +908,7 @@ async def blink(interaction: discord.Interaction):
             channel = interaction.channel
             try:
                 message = await channel.fetch_message(session.message_id)
+                original_image = message.attachments[0]
                 
                 # Create participant list
                 participants_text = "\n".join([
@@ -923,6 +924,7 @@ async def blink(interaction: discord.Interaction):
                     description=f"Session ends in {seconds_left} seconds!\n\n{participants_text}",
                     color=0x00ff00
                 )
+                embed.set_image(url=original_image.url)
                 
                 await message.edit(embed=embed)
                 await interaction.response.send_message(f"You blinked to position {session.participants[user_id]}!", ephemeral=True)
@@ -961,6 +963,7 @@ async def blink(interaction: discord.Interaction):
             description=f"<@{user_id}> started a blink session!\nUse `/blink` to join!\n\n<@{user_id}> blinked to position {session.participants[user_id]}!",
             color=0x00ff00
         )
+        embed.set_image(url=image.url)
         embed.set_footer(text="Session will end in 2 minutes")
         
         # Schedule session cleanup
