@@ -1,6 +1,8 @@
 # NubCat Discord Bot
 Discord Bot to handle different Maplestory 1 data and tools
 
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+
 ## Features
 - HEXA Matrix progression tracking and calculations
 - Boss information and blue dot requirements
@@ -57,3 +59,23 @@ To get started with development:
 - Renamed VI Skills category to Origin
 - Added time to max calculations with various daily fragment rates
 - Improved progress visualization with interactive category buttons
+
+## Changelog
+
+### [1.2.0] - 2024-03-02
+- Added green progress bars for 100% completion
+- Renamed VI Skills to Origin throughout the bot
+- Added time to max calculations with daily rates (12/35/60/100)
+- Enhanced progress visualization with interactive category buttons
+
+### [1.1.0] - 2024-03-02
+- Added green safe phase information to boss data
+- Enhanced bluedot command with phase information
+- Improved number formatting to include quadrillion (Q)
+
+### [1.0.0] - 2024-03-02
+- Initial release
+- HEXA Matrix progression tracking
+- Boss information and blue dot requirements
+- Discord timestamp generation
+- Basic utility commands
