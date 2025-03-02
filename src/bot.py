@@ -296,6 +296,12 @@ async def ping(interaction: discord.Interaction):
     latency = round(bot.latency * 1000)
     await interaction.response.send_message(f'🏓 Pong! Latency is {latency}ms')
 
+@bot.tree.command(name="roll", description="Roll a random number between 1-100")
+async def roll(interaction: discord.Interaction):
+    """Generate a random number between 1 and 100"""
+    result = random.randint(1, 100)
+    await interaction.response.send_message(f'🎲 You rolled: **{result}**')
+
 @bot.tree.command(name="hexalevel", description="Look up HEXA Matrix level progression information")
 async def hexalevel(interaction: discord.Interaction, level: int):
     """Look up information about HEXA Matrix level requirements"""
