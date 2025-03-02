@@ -1,6 +1,12 @@
 # NubCat Discord Bot
 Discord Bot to handle different Maplestory 1 data and tools
 
+## Features
+- HEXA Matrix progression tracking and calculations
+- Boss information and blue dot requirements
+- Discord timestamp generation
+- Interactive command responses with buttons
+
 ## Setup Instructions
 
 1. Make sure you have Python 3.8 or higher installed
@@ -20,11 +26,34 @@ Discord Bot to handle different Maplestory 1 data and tools
    ```
 
 ## Available Commands
-- `!hello` - Get a friendly greeting from the bot
-- `!ping` - Check the bot's latency
+
+### HEXA Matrix Commands
+- `/hexaprogress` - Track progress of all HEXA Matrix nodes with interactive category views
+  - Shows Origin, Mastery, Enhancement, and Common skill progress
+  - Includes time to max calculations and daily fragment goals
+  - Features color-coded progress bars (green for completed nodes)
+- `/hexalevel [level]` - Look up HEXA Matrix level requirements
+- `/progress [category] [level]` - Calculate remaining fragments for a specific category
+
+### Boss Information
+- `/bluedot [boss]` - Get boss information including:
+  - 5% blue dot damage requirement
+  - Total boss HP
+  - Level and AF/SaC requirements
+  - Green safe phase timing (if applicable)
+
+### Utility Commands
+- `/time [options]` - Generate Discord timestamps in various formats
+- `/ping` - Check the bot's latency
 
 ## Development
 To get started with development:
 1. Create a new Discord application and bot at [Discord Developer Portal](https://discord.com/developers/applications)
 2. Get your bot token and add it to the `.env` file
 3. Invite the bot to your server using the OAuth2 URL generator in the Developer Portal
+
+## Recent Updates
+- Added green progress bars for completed nodes (100%)
+- Renamed VI Skills category to Origin
+- Added time to max calculations with various daily fragment rates
+- Improved progress visualization with interactive category buttons
