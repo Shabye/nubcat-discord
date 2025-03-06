@@ -543,7 +543,7 @@ def create_lobby_embed(lobby: InhouseLobby) -> discord.Embed:
             embed.description = "Click 'Join Lobby' to join the game!"
         elif len(lobby.players) % 2 != 0:
             embed.description = "Waiting for one more player to make even teams!"
-    else:
+        else:
             embed.description = f"Ready to start with {len(lobby.players)} players ({len(lobby.players)//2} per team)!"
     else:
         team1_text = "\n".join([f"• {player.display_name}" for player in lobby.team1])
