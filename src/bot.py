@@ -2,14 +2,14 @@ import os
 import discord
 import random
 import asyncio
-import io
-from PIL import Image, ImageDraw
-import aiohttp
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from data.hexa_progression import HEXA_PROGRESSION
 from datetime import datetime, timedelta
+from typing import Optional, List
+import uuid
+from discord.ui import Button, View
 
 # Load environment variables
 load_dotenv()
@@ -42,21 +42,175 @@ active_blink_sessions = {}  # channel_id: BlinkSession
 
 # List of varied meow responses
 MEOW_RESPONSES = [
+    # Basic meows
     "meow 🐱",
     "mrrrow! 😺",
     "meeeeeow 😸",
     "purrrr 😽",
-    "*stretches* meoooow 🐈",
-    "mew! 😺",
+    "mew! ��",
     "nyaa~ 🐱",
+    "mrow? 😺",
+    "meeeep! 🐱",
+    "mrrrrp! 😸",
+    
+    # Action meows
+    "*stretches* meoooow 🐈",
     "*rolls over* meow! 😸",
     "*tilts head* mrrp? 😺",
-    "meow meow! 🐈",
     "*blinks slowly* meeeow 😽",
     "*paws at you* mrow! 🐱",
-    "purrrrrrr... meow! 😺",
     "*wiggles tail* meow! 🐈",
-    "miau! 😸"
+    "*curls up* mrrrrr... 😺",
+    "*perks ears* mew? 🐱",
+    "*grooms paw* mlem... meow 😺",
+    "*sharpens claws* hehe... meow 😼",
+    "*makes biscuits* purrrmeow~ 🐈",
+    "*loafs* comfortable meow 🍞😺",
+    "*shows belly* it's a trap meow! 😼",
+    
+    # Playful meows
+    "meow meow! *chases tail* 🐈",
+    "*knocks over water glass* meow! 😸",
+    "*attacks keyboard* mrrrowww! ⌨️😺",
+    "*demands pets* meeeeeow! 😽",
+    "*stares at wall* ...meow! 👻",
+    "*plays with box* best day meow! 📦😺",
+    "*attacks paper bag* SURPRISE MEOW! 🛍️",
+    "*pounces on feet under blanket* GOTCHA MEOW! 🦶😼",
+    "*zooms through cat tunnel* NYOOOOM MEOW! 🏃💨",
+    
+    # Hungry meows
+    "MEOW! *stares at food bowl* 🍽️",
+    "*sits by treats* mrrrrrow? 🐱",
+    "meow meow meow! *food dance* 😺",
+    "*watches you eat* sharing is caring meow? 👀",
+    "*tips food bowl over* MORE MEOW! 😾",
+    "*waits by treat drawer* I can hear them meow! 👂",
+    "*dramatic starving act* haven't eaten in MINUTES meow! 😿",
+    
+    # Sleepy meows
+    "*yawns* meeeeow~ 😴",
+    "purrrr... *dozes off* 💤",
+    "*sleepy blink* mew... 😪",
+    "*claims keyboard as bed* warm meow zzz... ⌨️😴",
+    "*naps in sunbeam* perfect spot meow... ☀️😴",
+    "*falls asleep mid-meow* meoooo... 😴",
+    "*sleep twitches* *snore-meow* 💤",
+    
+    # Grumpy meows
+    "hmph... meow. 😾",
+    "*grumpy face* mrrrf. 😤",
+    "*Monday mood* meow... 📅😾",
+    "*woken from nap* how DARE you meow 😾",
+    "*bath time* BETRAYAL MEOW! 🛁😾",
+    "*vet visit* we're enemies now meow 👩‍⚕️😾",
+    "*diet food* this is NOT food meow 🥗😾",
+    
+    # Excited meows
+    "MEOW MEOW MEOW! 🎉",
+    "*zoomies* MRRROWWW! ⚡",
+    "*bounces around* MEW MEW MEW! 🌟",
+    "*spots bird* EKEKEKEK meow! 🐦",
+    "*new cardboard box* BEST DAY EVER MEOW! 📦",
+    "*catnip time* WOOHOO MEOW! 🌿",
+    "*dinner time* FINALLY MEOW! 🍽️",
+    
+    # Seasonal meows
+    "❄️ *shivers* m-meow...",
+    "🌸 *sneezes from pollen* mew!",
+    "🌞 *sunbathes* purrrrrr...",
+    "🍂 *plays with leaf* meow!",
+    "🎄 *attacks Christmas tree* festive meow! 🎅",
+    "🎃 *spooky season* Halloween meow! 👻",
+    "🌧️ *watches raindrops* cozy indoor meow",
+    "⛱️ *too hot* melting meow...",
+    
+    # Gaming meows
+    "gg meow! 🎮",
+    "*rage quits* MEOW! 😾🎮",
+    "poggers meow! 😺",
+    "ez meow 😼",
+    "carried meow 😸",
+    "*clutches 1v9* challenger meow 🏆",
+    "jg diff meow 😿",
+    "ff15 meow 😾",
+    "report team meow 📝😾",
+    
+    # Time-based meows
+    "*morning stretch* meeeeeow~ ☀️",
+    "*3am zoomies* MEOW! 🌙",
+    "*2am wall sprint* PARKOUR MEOW! 🏃💨",
+    "*6am breakfast alarm* WAKE UP MEOW! ⏰",
+    "*midnight snack* sneaky meow... 🌙",
+    "*afternoon nap* prime time meow 😴",
+    
+    # Technology meows
+    "*sits on laptop* warm spot meow 💻",
+    "*attacks cursor* I HUNT MEOW! 🖱️",
+    "*webcam appearance* surprise stream meow! 🎥",
+    "*blocks screen* pay attention to ME-ow! 👀",
+    "*deletes document* helping meow! ⌨️",
+    
+    # Philosophical meows
+    "*existential crisis* meow...? 🤔",
+    "*contemplates red dot* what is life meow? 🔴",
+    "*stares into space* deep thoughts meow... 🌌",
+    "*watches ceiling* I see them meow 👻",
+    "*mirror discovery* who IS that meow? 🪞",
+    
+    # Mischievous meows
+    "*plots chaos* innocent meow 😇",
+    "*breaks vase* wasn't me meow 🏺",
+    "*steals food* ninja meow 🥷",
+    "*opens forbidden drawer* treasure hunt meow! 🗝️",
+    "*unrolls toilet paper* redecorating meow! 🧻",
+    
+    # Weather meows
+    "*thunder outside* protect me meow! ⛈️",
+    "*watches snow* magical meow ❄️",
+    "*chases wind leaf* I AM SPEED meow! 🍂",
+    "*sunny window spot* perfect day meow ☀️",
+    
+    # Social meows
+    "*sees other cat* this is MY house meow! 😾",
+    "*greets you at door* welcome home meow! 🏠",
+    "*meets dog* we can be friends meow? 🐕",
+    "*visitor arrives* stranger danger meow! 😨",
+    
+    # Food critic meows
+    "*gourmet meal* distinguished meow 🎩",
+    "*dry food again* peasant food meow 😒",
+    "*smells chicken* sharing is caring meow? 🍗",
+    "*fancy feast time* excellent choice meow 🍽️",
+    
+    # Misc meows
+    "*sees ghost* MEOW! 👻",
+    "*discovers reflection* mrow?! 🪞",
+    "*contemplates world domination* meow... 😼",
+    "*judges silently* ...meow. 👀",
+    "*discovers catnip* MEOoOoOW! 🌿",
+    "*spots red dot* MRRROW! 🔴",
+    "*vacuum cleaner appears* TACTICAL RETREAT MEOW! 🏃💨",
+    "*box delivery* for me meow? 📦",
+    "*fresh laundry* new bed meow! 👕",
+    "*plant murder* gardening meow 🌿",
+    "*sink drip* fascinating meow... 🚰",
+    "*paper falls* I SAVE YOU MEOW! 📄",
+    "*achieves vertical leap* parkour meow! 🤸",
+    "*knocks over cup* gravity test meow 🧪",
+    # Poki meows
+    "*watches Poki stream* best stream meow! 💝",
+    "Poki raid meow! 🎉",
+    "*donates to Poki* take my money meow! 💸",
+    "Poki sub check meow! 💜",
+    "*wears cat ears like Poki* matching meow! 🐱",
+    "Poki League stream meow! 🎮",
+    "*spams Poki emotes* meow meow meow! 😺",
+    "Tier 3 sub meow! 👑",
+    "*watches Poki TFT* challenger meow! 🏆",
+    "Poki tweet meow! 🐦",
+    "*joins Poki discord* community meow! 🫂",
+    "Poki youtube video meow! 📺"
 ]
 
 # Boss data for blue dot calculations
@@ -290,18 +444,243 @@ BOSS_DATA = {
     }
 }
 
-def format_number(number):
-    """Format large numbers into readable format with Q/T/B/M"""
-    if number >= 1000000000000000:  # Quadrillion
-        return f"{number/1000000000000000:.1f}Q"
-    elif number >= 1000000000000:  # Trillion
-        return f"{number/1000000000000:.1f}T"
-    elif number >= 1000000000:  # Billion
-        return f"{number/1000000000:.1f}B"
-    elif number >= 1000000:  # Million
-        return f"{number/1000000:.1f}M"
+# Add the ARAM champions list
+ARAM_CHAMPIONS = [
+    "Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Ambessa", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe",
+    "Aurelion Sol", "Aurora", "Azir", "Bard", "Bel'Veth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn",
+    "Camille", "Cassiopeia", "Cho'Gath", "Corki", "Darius", "Diana", "Dr. Mundo", "Draven", "Ekko",
+    "Elise", "Evelynn", "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen",
+    "Gnar", "Gragas", "Graves", "Gwen", "Hecarim", "Heimerdinger", "Hwei", "Illaoi", "Irelia",
+    "Ivern", "Janna", "Jarvan IV", "Jax", "Jayce", "Jhin", "Jinx", "K'Sante", "Kai'Sa", "Kalista",
+    "Karma", "Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Kha'Zix", "Kindred",
+    "Kled", "Kog'Maw", "LeBlanc", "Lee Sin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu",
+    "Lux", "Malphite", "Malzahar", "Maokai", "Master Yi", "Milio", "Miss Fortune", "Mordekaiser",
+    "Morgana", "Naafiri", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee", "Nilah", "Nocturne",
+    "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn",
+    "Rakan", "Rammus", "Rek'Sai", "Rell", "Renata Glasc", "Renekton", "Rengar", "Riven", "Rumble",
+    "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed",
+    "Sion", "Sivir", "Skarner", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "Taliyah",
+    "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "Twitch",
+    "Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Vex", "Vi", "Viego", "Viktor", "Vladimir",
+    "Volibear", "Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "Yasuo", "Yone", "Yorick", "Yuumi",
+    "Zac", "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra", "Smolder"
+]
+
+# Add dictionary to store active lobbies
+active_inhouse_lobbies = {}
+
+# Add the InhouseLobby class
+class InhouseLobby:
+    def __init__(self, creator: discord.Member):
+        self.lobby_id = str(uuid.uuid4())[:8]
+        self.creator = creator
+        self.players = [creator]  # Creator automatically joins
+        self.team1 = []
+        self.team2 = []
+        self.team1_champions = []
+        self.team2_champions = []
+        self.create_time = datetime.now()
+        self.teams_generated = False
+        self.champions_rolled = False
+        self.game_started = False
+
+    def generate_teams(self):
+        shuffled_players = self.players.copy()
+        random.shuffle(shuffled_players)
+        half = len(shuffled_players) // 2
+        self.team1 = shuffled_players[:half]
+        self.team2 = shuffled_players[half:]
+    
+    def generate_champions(self):
+        available_champs = ARAM_CHAMPIONS.copy()
+        random.shuffle(available_champs)
+        all_selected = available_champs[:30]
+        self.team1_champions = all_selected[:15]
+        self.team2_champions = all_selected[15:]
+
+# Add helper function for DMs
+async def send_champion_dm(player: discord.Member, champions: List[str], team_name: str, lobby_id: str):
+    embed = discord.Embed(
+        title=f"🎮 ARAM Champion Pool - Lobby #{lobby_id}",
+        description=f"Here are the available champions for {team_name}:",
+        color=0x00ff00 if team_name == "Blue Team" else 0xff0000
+    )
+    
+    # Format champions in rows of 3 with proper spacing
+    champ_list = []
+    for i in range(0, len(champions), 3):
+        row_champs = champions[i:i+3]
+        # Pad each champion name to 15 characters to align columns
+        formatted_row = "  ".join(f"{champ:<15}" for champ in row_champs)
+        champ_list.append(formatted_row)
+    
+    formatted_text = "```\n" + "\n".join(champ_list) + "\n```"
+    
+    embed.add_field(name="Champion Pool", value=formatted_text, inline=False)
+    embed.set_footer(text="Remember to keep these champions secret from the other team! 🤫")
+    
+    try:
+        await player.send(embed=embed)
+        return True
+    except discord.Forbidden:
+        return False
+
+def create_lobby_embed(lobby: InhouseLobby) -> discord.Embed:
+    embed = discord.Embed(
+        title=f"🎮 ARAM Inhouse Lobby #{lobby.lobby_id}",
+        color=0x00ff00
+    )
+    
+    if not lobby.teams_generated:
+        players_text = "\n".join([f"• {player.display_name}" for player in lobby.players])
+        embed.add_field(
+            name=f"Players ({len(lobby.players)})", 
+            value=players_text if players_text else "No players yet!", 
+            inline=False
+        )
+        
+        if len(lobby.players) < 2:
+            embed.description = "Click 'Join Lobby' to join the game!"
+        elif len(lobby.players) % 2 != 0:
+            embed.description = "Waiting for one more player to make even teams!"
     else:
-        return f"{number:,}"
+            embed.description = f"Ready to start with {len(lobby.players)} players ({len(lobby.players)//2} per team)!"
+    else:
+        team1_text = "\n".join([f"• {player.display_name}" for player in lobby.team1])
+        team2_text = "\n".join([f"• {player.display_name}" for player in lobby.team2])
+        
+        embed.add_field(name="🔵 Blue Team", value=team1_text, inline=True)
+        embed.add_field(name="🔴 Red Team", value=team2_text, inline=True)
+
+        if not lobby.champions_rolled:
+            embed.description = "Teams are set! Click 'Roll Champions' when ready."
+        elif not lobby.game_started:
+            embed.description = "Champions have been sent to team captains! Click 'Start Game' when ready."
+        else:
+            embed.add_field(
+                name="📋 Instructions",
+                value=(
+                    "1. Blue team creates a custom ARAM lobby\n"
+                    "2. Lobby name: `INHOUSE_" + lobby.lobby_id + "`\n"
+                    "3. Password: `" + lobby.lobby_id + "`\n"
+                    "4. All players join the game\n"
+                    "5. Start when everyone is ready!"
+                ),
+                inline=False
+            )
+    
+    return embed
+
+class InhouseLobbyView(discord.ui.View):
+    def __init__(self, lobby: InhouseLobby):
+        super().__init__(timeout=None)
+        self.lobby = lobby
+        self.update_buttons()
+
+    def update_buttons(self):
+        join_button = [x for x in self.children if x.custom_id == "join"][0]
+        join_button.disabled = self.lobby.teams_generated
+        
+        start_button = [x for x in self.children if x.custom_id == "start"][0]
+        start_button.disabled = (len(self.lobby.players) < 2 or 
+                               len(self.lobby.players) % 2 != 0 or 
+                               self.lobby.teams_generated)
+        
+        reroll_button = [x for x in self.children if x.custom_id == "reroll"][0]
+        reroll_button.disabled = not self.lobby.teams_generated or self.lobby.champions_rolled
+        
+        roll_champs_button = [x for x in self.children if x.custom_id == "roll_champs"][0]
+        roll_champs_button.disabled = not self.lobby.teams_generated or self.lobby.champions_rolled
+        
+        start_game_button = [x for x in self.children if x.custom_id == "start_game"][0]
+        start_game_button.disabled = not self.lobby.champions_rolled or self.lobby.game_started
+
+    @discord.ui.button(label="Join Lobby", style=discord.ButtonStyle.primary, custom_id="join")
+    async def join_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Defer the response right away
+        await interaction.response.defer()
+        
+        if interaction.user in self.lobby.players:
+            await interaction.followup.send("You're already in the lobby!", ephemeral=True)
+            return
+            
+        self.lobby.players.append(interaction.user)
+        self.update_buttons()
+        
+        embed = create_lobby_embed(self.lobby)
+        await interaction.message.edit(embed=embed, view=self)
+
+    @discord.ui.button(label="Start Teams", style=discord.ButtonStyle.success, custom_id="start")
+    async def start_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        
+        if interaction.user != self.lobby.creator:
+            await interaction.followup.send("Only the lobby creator can start team generation!", ephemeral=True)
+            return
+            
+        self.lobby.teams_generated = True
+        self.lobby.generate_teams()
+        
+        self.update_buttons()
+        embed = create_lobby_embed(self.lobby)
+        await interaction.message.edit(embed=embed, view=self)
+
+    @discord.ui.button(label="Reroll Teams", style=discord.ButtonStyle.danger, custom_id="reroll")
+    async def reroll_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        
+        if interaction.user != self.lobby.creator:
+            await interaction.followup.send("Only the lobby creator can reroll teams!", ephemeral=True)
+            return
+            
+        self.lobby.generate_teams()
+        
+        embed = create_lobby_embed(self.lobby)
+        await interaction.message.edit(embed=embed, view=self)
+
+    @discord.ui.button(label="Roll Champions", style=discord.ButtonStyle.primary, custom_id="roll_champs")
+    async def roll_champs_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        
+        if interaction.user != self.lobby.creator:
+            await interaction.followup.send("Only the lobby creator can roll champions!", ephemeral=True)
+            return
+            
+        self.lobby.champions_rolled = True
+        self.lobby.generate_champions()
+        
+        # Send champion pools to team captains
+        dm_status = []
+        if not await send_champion_dm(self.lobby.team1[0], self.lobby.team1_champions, "Blue Team", self.lobby.lobby_id):
+            dm_status.append(f"❌ Could not send champion pool to Blue Team captain ({self.lobby.team1[0].display_name})")
+        
+        if not await send_champion_dm(self.lobby.team2[0], self.lobby.team2_champions, "Red Team", self.lobby.lobby_id):
+            dm_status.append(f"❌ Could not send champion pool to Red Team captain ({self.lobby.team2[0].display_name})")
+        
+        embed = create_lobby_embed(self.lobby)
+        if dm_status:
+            embed.add_field(
+                name="⚠️ Notifications",
+                value="\n".join(dm_status) + "\nPlease make sure your DMs are enabled!",
+                inline=False
+            )
+        
+        self.update_buttons()
+        await interaction.message.edit(embed=embed, view=self)
+
+    @discord.ui.button(label="Start Game", style=discord.ButtonStyle.success, custom_id="start_game")
+    async def start_game_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        
+        if interaction.user != self.lobby.creator:
+            await interaction.followup.send("Only the lobby creator can start the game!", ephemeral=True)
+            return
+            
+        self.lobby.game_started = True
+        
+        embed = create_lobby_embed(self.lobby)
+        self.update_buttons()
+        await interaction.message.edit(embed=embed, view=self)
 
 @bot.event
 async def on_ready():
@@ -373,6 +752,19 @@ async def hexalevel(interaction: discord.Interaction, level: int):
     
     await interaction.response.send_message(embed=embed)
 
+def format_number(number):
+    """Format large numbers into readable format with Q/T/B/M"""
+    if number >= 1000000000000000:  # Quadrillion
+        return f"{number/1000000000000000:.1f}Q"
+    elif number >= 1000000000000:  # Trillion
+        return f"{number/1000000000000:.1f}T"
+    elif number >= 1000000000:  # Billion
+        return f"{number/1000000000:.1f}B"
+    elif number >= 1000000:  # Million
+        return f"{number/1000000:.1f}M"
+    else:
+        return f"{number:,}"
+
 def create_progress_bar(current, maximum, length=20):
     """Creates a visual progress bar with emojis and detailed percentage"""
     filled = int((current / maximum) * length)
@@ -391,14 +783,18 @@ def create_progress_bar(current, maximum, length=20):
     app_commands.Choice(name="Enhancement", value="enhance"),
     app_commands.Choice(name="Common", value="common")
 ])
-async def progress(interaction: discord.Interaction, category: str, current_level: int):
+async def progress(interaction: discord.Interaction, category: str, current_level: int, target_level: Optional[int] = 30):
     """Calculate remaining fragment requirements and show progress for HEXA Matrix categories"""
     if current_level < 0 or current_level > 30:
         await interaction.response.send_message("Level must be between 0 and 30!", ephemeral=True)
         return
 
-    # Get max level (30) data
-    max_data = HEXA_PROGRESSION[30]
+    if target_level < current_level or target_level > 30:
+        await interaction.response.send_message("Target level must be between current level and 30!", ephemeral=True)
+        return
+
+    # Get target level data instead of max level
+    max_data = HEXA_PROGRESSION[target_level]
     current_data = HEXA_PROGRESSION[current_level]
     
     # Map category to attribute prefixes and colors
@@ -422,7 +818,7 @@ async def progress(interaction: discord.Interaction, category: str, current_leve
     
     # Create embed with category-specific color
     embed = discord.Embed(
-        title=f"{display_name} Progress | Level {current_level} → 30",
+        title=f"{display_name} Progress | Level {current_level} → {target_level}",
         color=color
     )
     
@@ -443,7 +839,7 @@ async def progress(interaction: discord.Interaction, category: str, current_leve
     )
     
     # Add next level requirements if not max level
-    if current_level < 30:
+    if current_level < target_level:
         next_data = HEXA_PROGRESSION[current_level + 1]
         next_frags = getattr(next_data, f"{prefix}_fragments")
         
@@ -454,10 +850,9 @@ async def progress(interaction: discord.Interaction, category: str, current_leve
         )
     
     # Add milestone levels info
-    milestones = [10, 20, 30]
+    milestones = [level for level in [10, 20, 30] if current_level < level <= target_level]
     milestone_info = []
     for milestone in milestones:
-        if current_level < milestone:
             milestone_data = HEXA_PROGRESSION[milestone]
             frags_needed = getattr(milestone_data, f"{prefix}_frag_total") - current_frags
             milestone_info.append(f"**Level {milestone}:**\n"
@@ -886,6 +1281,21 @@ async def bluedot(interaction: discord.Interaction, boss: str):
 
     await interaction.response.send_message(embed=embed)
 
+@bot.tree.command(
+    name="inhouse",
+    description="Create an ARAM inhouse lobby"
+)
+async def inhouse(interaction: discord.Interaction):
+    """Create an ARAM inhouse lobby"""
+    # Create new lobby
+    lobby = InhouseLobby(interaction.user)
+    active_inhouse_lobbies[lobby.lobby_id] = lobby
+    
+    # Create embed and view
+    embed = create_lobby_embed(lobby)
+    view = InhouseLobbyView(lobby)
+    
+    await interaction.response.send_message(embed=embed, view=view)
 
 # Run the bot
 if __name__ == '__main__':

@@ -1,67 +1,37 @@
 # NubCat Discord Bot
 Discord Bot to handle different Maplestory 1 data and tools
 
-![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.3-blue.svg)
 
 ## Features
 - HEXA Matrix progression tracking and calculations
-- Boss information and blue dot requirements
-- Discord timestamp generation
-- Interactive command responses with buttons
-
-## Setup Instructions
-
-1. Make sure you have Python 3.8 or higher installed
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Create a `.env` file in the root directory with your Discord bot token:
-   ```
-   DISCORD_TOKEN=your_bot_token_here
-   ```
-
-4. Run the bot:
-   ```bash
-   python src/bot.py
-   ```
-
-## Available Commands
+- Boss crystal price calculations
+- Utility commands
 
 ### HEXA Matrix Commands
-- `/hexaprogress` - Track progress of all HEXA Matrix nodes with interactive category views
-  - Shows Origin, Mastery, Enhancement, and Common skill progress
-  - Includes time to max calculations and daily fragment goals
-  - Features color-coded progress bars (green for completed nodes)
-- `/hexalevel [level]` - Look up HEXA Matrix level requirements
-- `/progress [category] [level]` - Calculate remaining fragments for a specific category
+- `/hexaprogress [origin] [mastery1] [mastery2] [enhance1] [enhance2] [enhance3] [enhance4] [common]` - Calculate fragment requirements for all skill nodes
+- `/progress [category] [level] [target_level]` - Calculate remaining fragment requirements and show progress for a specific category
 
-### Boss Information
-- `/bluedot [boss]` - Get boss information including:
-  - 5% blue dot damage requirement
-  - Total boss HP
-  - Level and AF/SaC requirements
-  - Green safe phase timing (if applicable)
+### Boss Commands
+- `/bluedot [boss]` - Show boss crystal price for current week
 
 ### Utility Commands
 - `/time [options]` - Generate Discord timestamps in various formats
 - `/roll` - Roll a random number between 1-100
 - `/ping` - Check the bot's latency
+- `/inhouse` - Create an ARAM custom game lobby
 
 ## Development
 To get started with development:
-1. Create a new Discord application and bot at [Discord Developer Portal](https://discord.com/developers/applications)
-2. Get your bot token and add it to the `.env` file
-3. Invite the bot to your server using the OAuth2 URL generator in the Developer Portal
-
-## Recent Updates
-- Added green progress bars for completed nodes (100%)
-- Renamed VI Skills category to Origin
-- Added time to max calculations with various daily fragment rates
-- Improved progress visualization with interactive category buttons
+1. Clone the repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Create a `.env` file with your Discord bot token
+4. Run the bot: `python src/bot.py`
 
 ## Changelog
+
+### [1.2.3] - 2024-03-06
+- Added `/inhouse` command for League of Legends ARAM custom games
 
 ### [1.2.1] - 2024-03-02
 - Added `/roll` command for generating random numbers between 1-100
