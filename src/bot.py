@@ -1192,23 +1192,33 @@ async def time(
 ):
     """Generate a Discord timestamp for a specific date and time"""
     try:
-        # Create datetime and convert to Unix timestamp
         from datetime import datetime
+        current_time = datetime.now()
         
-        # If any of year, month, or day is None, use current time
-        if year is None or month is None or day is None:
-            dt = datetime.now()
+        # If all date/time components are None, use current time
+        if all(x is None for x in [year, month, day, hour, minute]):
+            dt = current_time
         else:
-            # Use provided date with current time if hour/minute not specified
-            current_time = datetime.now()
+            # Use current date for any missing date components
+            year = year if year is not None else current_time.year
+            month = month if month is not None else current_time.month
+            day = day if day is not None else current_time.day
+            
+            # If hour is specified but minute isn't, set minute to 0
+            if hour is not None and minute is None:
+                minute = 0
+            else:
+                # Otherwise use current minute if not specified
+                minute = minute if minute is not None else current_time.minute
+                
+            # Use current hour if not specified
             hour = hour if hour is not None else current_time.hour
-            minute = minute if minute is not None else current_time.minute
+            
             dt = datetime(year, month, day, hour, minute)
             
         timestamp = int(dt.timestamp())
         formatted = f"<t:{timestamp}:{style}>"
         
-        # Send just the formatted timestamp
         await interaction.response.send_message(formatted)
         
     except ValueError as e:
