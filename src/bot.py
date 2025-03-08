@@ -216,14 +216,19 @@ MEOW_RESPONSES = [
 # Add these at the top level of the file
 MEOW_TARGET_IDS = [
     162647565035241472,
+    241588839364165632,
     173165300353597440,
-    320615978742317057,
+    320615978742317057, 
     1339409714508988416,
     131948802767716353,
     117641187254337537,
     154316403757809665,
     188754605314670592,
-    83827223286546432
+    83827223286546432,
+    117641187254337537,
+    117641187254337537,
+    117641187254337537,
+    117641187254337537
 ]
 
 current_target_id = None
@@ -241,8 +246,8 @@ async def swap_target_user():
             last_swap_time = datetime.now()
             print(f"New target selected: {current_target_id}")
             
-            # Wait for 2 hours
-            await asyncio.sleep(7200)  # 7200 seconds = 2 hours
+            # Wait for 1 hours
+            await asyncio.sleep(3600) 
             
         except Exception as e:
             print(f"Error in swap_target_user: {e}")
