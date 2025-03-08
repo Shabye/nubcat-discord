@@ -213,6 +213,41 @@ MEOW_RESPONSES = [
     "Poki youtube video meow! 📺"
 ]
 
+# Add these at the top level of the file
+MEOW_TARGET_IDS = [
+    162647565035241472,
+    173165300353597440,
+    320615978742317057,
+    1339409714508988416,
+    131948802767716353,
+    117641187254337537,
+    154316403757809665,
+    188754605314670592,
+    83827223286546432
+]
+
+current_target_id = None
+last_swap_time = None
+
+# Update the swap function to use the predefined list
+async def swap_target_user():
+    global current_target_id, last_swap_time
+    
+    while True:
+        try:
+            # Select random user from our predefined list
+            new_target = random.choice(MEOW_TARGET_IDS)
+            current_target_id = new_target
+            last_swap_time = datetime.now()
+            print(f"New target selected: {current_target_id}")
+            
+            # Wait for 2 hours
+            await asyncio.sleep(7200)  # 7200 seconds = 2 hours
+            
+        except Exception as e:
+            print(f"Error in swap_target_user: {e}")
+            await asyncio.sleep(60)  # Wait a minute before retrying if there's an error
+
 # Boss data for blue dot calculations
 BOSS_DATA = {
     "normal_lotus": {
@@ -681,34 +716,6 @@ class InhouseLobbyView(discord.ui.View):
         embed = create_lobby_embed(self.lobby)
         self.update_buttons()
         await interaction.message.edit(embed=embed, view=self)
-
-# Add these variables at the top level of the file
-current_target_id = None
-last_swap_time = None
-
-# Add this new function to handle user swapping
-async def swap_target_user():
-    global current_target_id, last_swap_time
-    
-    while True:
-        try:
-            # Get all guilds the bot is in
-            for guild in bot.guilds:
-                # Get list of human members (non-bots)
-                members = [member for member in guild.members if not member.bot]
-                if members:
-                    # Select random member
-                    new_target = random.choice(members)
-                    current_target_id = new_target.id
-                    last_swap_time = datetime.now()
-                    print(f"New target selected: {new_target.name} ({current_target_id})")
-            
-            # Wait for 2 hours
-            await asyncio.sleep(7200)  # 7200 seconds = 2 hours
-            
-        except Exception as e:
-            print(f"Error in swap_target_user: {e}")
-            await asyncio.sleep(60)  # Wait a minute before retrying if there's an error
 
 @bot.event
 async def on_ready():
