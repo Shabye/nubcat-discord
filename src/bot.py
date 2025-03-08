@@ -682,6 +682,34 @@ class InhouseLobbyView(discord.ui.View):
         self.update_buttons()
         await interaction.message.edit(embed=embed, view=self)
 
+# Add these variables at the top level of the file
+current_target_id = None
+last_swap_time = None
+
+# Add this new function to handle user swapping
+async def swap_target_user():
+    global current_target_id, last_swap_time
+    
+    while True:
+        try:
+            # Get all guilds the bot is in
+            for guild in bot.guilds:
+                # Get list of human members (non-bots)
+                members = [member for member in guild.members if not member.bot]
+                if members:
+                    # Select random member
+                    new_target = random.choice(members)
+                    current_target_id = new_target.id
+                    last_swap_time = datetime.now()
+                    print(f"New target selected: {new_target.name} ({current_target_id})")
+            
+            # Wait for 2 hours
+            await asyncio.sleep(7200)  # 7200 seconds = 2 hours
+            
+        except Exception as e:
+            print(f"Error in swap_target_user: {e}")
+            await asyncio.sleep(60)  # Wait a minute before retrying if there's an error
+
 @bot.event
 async def on_ready():
     print('----------------------------------------')
@@ -695,6 +723,9 @@ async def on_ready():
     await bot.tree.sync()
     print('Slash commands synced!')
     print('----------------------------------------')
+    
+    # Start the user swap task
+    bot.loop.create_task(swap_target_user())
 
 @bot.tree.command(name="ping", description="Check the bot's latency")
 async def ping(interaction: discord.Interaction):
@@ -1159,13 +1190,13 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Check if the message is from the specific user
-    if message.author.id == 117641187254337537:
+    # Check if the message is from the current target user
+    if message.author.id == current_target_id:
         # Pick a random meow response
         meow = random.choice(MEOW_RESPONSES)
         await message.channel.send(meow)
     
-    # Process commands (this is needed to make sure commands still work)
+    # Process commands
     await bot.process_commands(message)
 
 @bot.tree.command(

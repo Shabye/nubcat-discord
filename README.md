@@ -1,12 +1,13 @@
 # NubCat Discord Bot
 Discord Bot to handle different Maplestory 1 data and tools
 
-![Version](https://img.shields.io/badge/version-1.2.3-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.4-blue.svg)
 
 ## Features
 - HEXA Matrix progression tracking and calculations
 - Boss crystal price calculations
 - Utility commands
+- Random meow responses to rotating target users
 
 ### HEXA Matrix Commands
 - `/hexaprogress [origin] [mastery1] [mastery2] [enhance1] [enhance2] [enhance3] [enhance4] [common]` - Calculate fragment requirements for all skill nodes
@@ -21,6 +22,9 @@ Discord Bot to handle different Maplestory 1 data and tools
 - `/ping` - Check the bot's latency
 - `/inhouse` - Create an ARAM custom game lobby
 
+### Fun Features
+- Random meow responses to a randomly selected user (changes every 2 hours)
+
 ## Development
 To get started with development:
 1. Clone the repository
@@ -29,6 +33,11 @@ To get started with development:
 4. Run the bot: `python src/bot.py`
 
 ## Changelog
+
+### [1.2.4] - 2024-03-07
+- Added rotating target user system for meow responses
+- Target user changes randomly every 2 hours
+- Only selects from non-bot users in the server
 
 ### [1.2.3] - 2024-03-06
 - Added `/inhouse` command for League of Legends ARAM custom games
